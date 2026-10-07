@@ -674,9 +674,109 @@
 	background: linear-gradient(#5b8cff, #a8c6ff);
 }
 
-.dynmap .timeofday.digitalclock {
-	font: 24px/28px var(--mc-font);
+/* Pixel digits drawn by timeofdayclock.js; white like in-game text (dynmap_style.css fades it to yellow / cyan after 8s) */
+.dynmap .timeofday.digitalclock,
+.dynmap .timeofday.digitalclock.day,
+.dynmap .timeofday.digitalclock.night {
+	bottom: 33px;
+	height: 24px;
+	color: var(--mc-text);
+	line-height: 0;
+	transition: none;
+}
+
+.dynmap .timeofday.digitalclock svg {
+	display: block;
+	margin: 0 auto;
+}
+
+/*******************
+ * Compass - pixel dial with the needle and N/E/S/W turned to where north is in the current view
+ */
+
+/* Pixel art, generated as SVG */
+.dynmap {
+	--mc-compass-dial: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%231b1b1b' d='M4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM7 0h1v1h-1zM2 1h1v1h-1zM3 1h1v1h-1zM8 1h1v1h-1zM9 1h1v1h-1zM1 2h1v1h-1zM10 2h1v1h-1zM1 3h1v1h-1zM10 3h1v1h-1zM0 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM11 6h1v1h-1zM0 7h1v1h-1zM11 7h1v1h-1zM1 8h1v1h-1zM10 8h1v1h-1zM1 9h1v1h-1zM10 9h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1z'/%3E%3Cpath fill='%23d6d6d6' d='M4 1h1v1h-1zM5 1h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM2 3h1v1h-1zM1 4h1v1h-1zM1 5h1v1h-1zM1 6h1v1h-1z'/%3E%3Cpath fill='%232b3340' d='M4 2h1v1h-1zM5 2h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM8 3h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM2 5h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM8 5h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM2 7h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1z'/%3E%3Cpath fill='%23a2a2a2' d='M8 2h1v1h-1zM1 7h1v1h-1zM2 8h1v1h-1zM2 9h1v1h-1z'/%3E%3Cpath fill='%235e5e5e' d='M9 2h1v1h-1zM9 3h1v1h-1zM10 4h1v1h-1zM10 5h1v1h-1zM10 6h1v1h-1zM10 7h1v1h-1zM9 8h1v1h-1zM3 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1z'/%3E%3Cpath fill='%23232a35' d='M9 4h1v1h-1zM9 5h1v1h-1zM9 6h1v1h-1zM9 7h1v1h-1zM3 8h1v1h-1zM8 8h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1z'/%3E%3C/svg%3E");
+	--mc-compass-needle-straight: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff4a4a' d='M5 2h1v1h-1zM5 3h1v1h-1zM5 4h1v1h-1zM5 5h1v1h-1z'/%3E%3Cpath fill='%23a8261f' d='M6 2h1v1h-1zM6 3h1v1h-1zM6 4h1v1h-1zM6 5h1v1h-1z'/%3E%3Cpath fill='%23e8e8e8' d='M5 6h1v1h-1zM5 7h1v1h-1zM5 8h1v1h-1zM5 9h1v1h-1z'/%3E%3Cpath fill='%239a9a9a' d='M6 6h1v1h-1zM6 7h1v1h-1zM6 8h1v1h-1zM6 9h1v1h-1z'/%3E%3C/svg%3E");
+	--mc-compass-needle-diagonal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff4a4a' d='M8 3h1v1h-1zM7 4h1v1h-1zM6 5h1v1h-1z'/%3E%3Cpath fill='%23a8261f' d='M8 4h1v1h-1zM7 5h1v1h-1zM6 6h1v1h-1z'/%3E%3Cpath fill='%23e8e8e8' d='M5 6h1v1h-1zM4 7h1v1h-1zM3 8h1v1h-1z'/%3E%3Cpath fill='%239a9a9a' d='M5 7h1v1h-1zM4 8h1v1h-1zM3 9h1v1h-1z'/%3E%3C/svg%3E");
+}
+
+.dynmap .compass {
+	/* Default view (SE): north is up and to the right */
+	--compass-angle: 45deg;
+	--compass-needle: var(--mc-compass-needle-diagonal);
+	--compass-needle-turn: 0deg;
+
+	top: 12px;
+	right: 16px;
+	width: 96px;
+	height: 96px;
+
+	background: var(--mc-compass-dial) no-repeat center / 48px 48px;
+	filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35));
+	pointer-events: none;
+	transition: right 0.6s ease-in-out;
+}
+
+/* Pixel art only stays crisp turned in 90 degree steps, so diagonal views use a diagonal needle */
+.dynmap .compass.compass_S,
+.dynmap .compass.compass_flat { --compass-angle: 0deg; --compass-needle: var(--mc-compass-needle-straight); --compass-needle-turn: 0deg; }
+.dynmap .compass.compass_SE { --compass-angle: 45deg; --compass-needle: var(--mc-compass-needle-diagonal); --compass-needle-turn: 0deg; }
+.dynmap .compass.compass_E { --compass-angle: 90deg; --compass-needle: var(--mc-compass-needle-straight); --compass-needle-turn: 90deg; }
+.dynmap .compass.compass_NE { --compass-angle: 135deg; --compass-needle: var(--mc-compass-needle-diagonal); --compass-needle-turn: 90deg; }
+.dynmap .compass.compass_N { --compass-angle: 180deg; --compass-needle: var(--mc-compass-needle-straight); --compass-needle-turn: 180deg; }
+.dynmap .compass.compass_NW { --compass-angle: 225deg; --compass-needle: var(--mc-compass-needle-diagonal); --compass-needle-turn: 180deg; }
+.dynmap .compass.compass_W { --compass-angle: 270deg; --compass-needle: var(--mc-compass-needle-straight); --compass-needle-turn: 270deg; }
+.dynmap .compass.compass_SW { --compass-angle: 315deg; --compass-needle: var(--mc-compass-needle-diagonal); --compass-needle-turn: 270deg; }
+
+.dynmap .compass .compass-needle {
+	position: absolute;
+	top: 24px;
+	left: 24px;
+	width: 48px;
+	height: 48px;
+
+	background: var(--compass-needle) no-repeat center / 48px 48px;
+	transform: rotate(var(--compass-needle-turn));
+}
+
+/* Placed around the dial, kept upright */
+.dynmap .compass .compass-dir {
+	--compass-dir-turn: calc(var(--compass-angle) + var(--compass-dir-angle));
+
+	position: absolute;
+	top: 40px;
+	left: 40px;
+	width: 16px;
+	height: 16px;
+
+	color: var(--mc-text);
+	font: 16px/16px var(--mc-font);
+	text-align: center;
 	text-shadow: 2px 2px 0 var(--mc-text-shadow);
+	transform: rotate(var(--compass-dir-turn)) translateY(-36px) rotate(calc(-1 * var(--compass-dir-turn)));
+}
+
+.dynmap .compass .compass-dir-N {
+	--compass-dir-angle: 0deg;
+	color: var(--mc-nether);
+	text-shadow: 2px 2px 0 var(--mc-nether-shadow);
+}
+
+.dynmap .compass .compass-dir-E { --compass-dir-angle: 90deg; }
+.dynmap .compass .compass-dir-S { --compass-dir-angle: 180deg; }
+.dynmap .compass .compass-dir-W { --compass-dir-angle: 270deg; }
+
+/* Keep clear of a pinned sidebar (upstream leaves the compass hidden under it) */
+.dynmap:has(.sidebar.pinned) .compass {
+	right: 218px;
+}
+
+.dynmap .compass.mobilecompass {
+	top: 4px;
+	right: 4px;
+	transform: scale(0.6);
+	transform-origin: top right;
 }
 
 /*******************

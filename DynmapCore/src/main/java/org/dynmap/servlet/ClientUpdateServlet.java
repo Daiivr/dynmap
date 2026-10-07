@@ -120,9 +120,13 @@ public class ClientUpdateServlet extends HttpServlet {
             JSONArray newupdates = new JSONArray();
             u.put("updates", newupdates);
             if(updates != null) {
+                // The client asks for the next update with since = this snapshot's timestamp, so only send
+                // updates from before it: one queued in the same millisecond would otherwise be sent twice
+                Object snapshot = u.get("timestamp");
+                long until = (snapshot instanceof Long) ? (Long) snapshot : Long.MAX_VALUE;
                 for(ListIterator<Client.Update> iter = updates.listIterator(); iter.hasNext();) {
                     Client.Update update = iter.next();
-                    if(update.timestamp >= since) {
+                    if((update.timestamp >= since) && (update.timestamp < until)) {
                         newupdates.add(update);
                     }
                 }

@@ -66,6 +66,7 @@ DynMap.prototype = {
 	playerfield: null,
 	visitingworld: null,
 	layercontrol: undefined,
+	updating: false,
 	
 	sidebarSections: [],
 	
@@ -325,6 +326,11 @@ DynMap.prototype = {
 		if ((!me.nogui) && (!me.nocompass)) {
 			var compass = $('<div/>').
 				addClass('compass');
+			// Needle and cardinal points, turned to match the map's view direction by the stylesheet
+			$('<div/>').addClass('compass-needle').appendTo(compass);
+			$.each([ 'N', 'E', 'S', 'W' ], function(index, dir) {
+				$('<span/>').addClass('compass-dir compass-dir-' + dir).text(dir).appendTo(compass);
+			});
 			if(L.Browser.mobile)
 				compass.addClass('mobilecompass');
 			
@@ -385,7 +391,6 @@ DynMap.prototype = {
 				if (componentstoload == 0) {
 					// Actually start updating once all components are loaded.
 					me.update();
-					setTimeout(function() { me.update(); }, me.options.updaterate);
 				}
 			});
 		});
@@ -675,13 +680,21 @@ DynMap.prototype = {
 	update: function() {
 		var me = this;
 
+		// One request at a time: two in flight with the same timestamp can both get the same chat
+		// and join/quit events back (shown twice), and an older response can arrive after a newer one
+		if (me.updating) {
+			return;
+		}
+
 		if (document.visibilityState === "hidden") {
 		    setTimeout(function() { me.update(); }, me.options.updaterate);
 			return;
 		}
 
 		$(me).trigger('worldupdating');
+		me.updating = true;
 		$.getJSON(me.formatUrl('update', { world: me.world.name, timestamp: me.lasttimestamp, reqid: me.reqid }), function(update) {
+				me.updating = false;
 				me.reqid++; // Bump request ID always
 				if (!update) {
 					setTimeout(function() { me.update(); }, me.options.updaterate);
@@ -781,6 +794,7 @@ DynMap.prototype = {
 				me.missedupdates = 0;
 				setTimeout(function() { me.update(); }, me.options.updaterate);
 			}, function(status, statusText, request) {
+				me.updating = false;
 				me.lasttimestamp--;	// Avoid same TS URL
 				me.missedupdates++;
 				if(me.missedupdates > 2) {

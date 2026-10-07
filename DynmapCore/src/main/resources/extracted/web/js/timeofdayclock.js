@@ -38,33 +38,104 @@ componentconstructors['timeofdayclock'] = function(dynmap, configuration) {
 			}
 			return formatDigits(time.hours, 2) + ':' + formatDigits(time.minutes, 2);
 		};
-		
-		var setTime = function(servertime) {
+
+		// The time is drawn with 5x7 pixel digits and a one-pixel shadow, like in-game text, as SVG
+		// so it stays crisp at any size (the page font's 5 reads like a mirrored 2)
+		var GLYPHS = {
+			'0': [ '.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.' ],
+			'1': [ '..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '#####' ],
+			'2': [ '.###.', '#...#', '....#', '..##.', '.#...', '#....', '#####' ],
+			'3': [ '.###.', '#...#', '....#', '..##.', '....#', '#...#', '.###.' ],
+			'4': [ '...##', '..#.#', '.#..#', '#...#', '#####', '....#', '....#' ],
+			'5': [ '#####', '#....', '####.', '....#', '....#', '#...#', '.###.' ],
+			'6': [ '..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.' ],
+			'7': [ '#####', '#...#', '....#', '...#.', '..#..', '..#..', '..#..' ],
+			'8': [ '.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.' ],
+			'9': [ '.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..' ],
+			':': [ '.', '#', '.', '.', '.', '#', '.' ]
+		};
+		var PIXEL_SIZE = 3;
+
+		var pixelText = function(text) {
+			var x = 0, path = '';
+			$.each(text.split(''), function(index, ch) {
+				var glyph = GLYPHS[ch];
+				if (!glyph)
+					return;
+				$.each(glyph, function(y, row) {
+					for (var gx = 0; gx < row.length; gx++) {
+						if (row.charAt(gx) == '#')
+							path += 'M' + (x + gx) + ' ' + y + 'h1v1h-1z';
+					}
+				});
+				x += glyph[0].length + 1;	// One column between characters, the last one holds the shadow
+			});
+			var height = 8;	// 7 rows plus the shadow
+			return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + x + ' ' + height + '"' +
+				' width="' + (x * PIXEL_SIZE) + '" height="' + (height * PIXEL_SIZE) + '" shape-rendering="crispEdges" aria-hidden="true">' +
+				'<path fill="#3f3f3f" transform="translate(1 1)" d="' + path + '"/>' +
+				'<path fill="currentColor" d="' + path + '"/></svg>';
+		};
+
+		var shownText = null;
+		var showText = function(text) {
+			if (text === shownText)
+				return;
+			shownText = text;
+			clock
+				.attr('aria-label', text)
+				.html(text ? pixelText(text) : '');
+		};
+
+		// Between updates the clock runs on at the game's 20 ticks per second, once two updates show
+		// the time is moving at all (it stands still in some dimensions, or with doDaylightCycle off).
+		// An update arriving slightly behind the shown time (server below 20 TPS) holds the clock
+		// rather than stepping it back a minute.
+		var TICKS_PER_MS = 20 / 1000;
+		var MAX_HOLD_TICKS = 400;
+		var base = null;	// Last server time: { servertime, at, rate }
+		var shown = null;	// Ticks on display
+
+		var showTime = function() {
 			if (timeout != null) {
 				window.clearTimeout(timeout);
 				timeout = null;
 			}
-			var time = null;
-			if(servertime >= 0) {
-				time = getMinecraftTime(servertime);
-				clock
-					.addClass(time.day ? 'day' : 'night')
-					.removeClass(time.night ? 'day' : 'night')
-					.text(formatTime(time));
+			if (base == null) {
+				clock.removeClass('day night');
+				showText('');
+				return;
 			}
-			else {
-				clock
-					.removeClass('day night')
-					.text('');
-			}			
-			if ((timeout == null) && (time != null)) {
-				timeout = window.setTimeout(function() {
-					timeout = null;
-					setTime(time.servertime+(1000/60));
-				}, 700);
+			var ticks = (base.servertime + (Date.now() - base.at) * base.rate) % 24000;
+			if ((shown != null) && (base.rate > 0)) {
+				var behind = (((shown - ticks) % 24000) + 24000) % 24000;	// Wraps at midnight
+				if (behind < MAX_HOLD_TICKS)
+					ticks = shown;
+			}
+			shown = ticks;
+			var time = getMinecraftTime(Math.floor(ticks));
+			clock
+				.addClass(time.day ? 'day' : 'night')
+				.removeClass(time.night ? 'day' : 'night');
+			showText(formatTime(time));
+			if (base.rate > 0) {
+				timeout = window.setTimeout(showTime, 250);
 			}
 		};
-		
+
+		var setTime = function(servertime) {
+			if (servertime >= 0) {
+				var moving = (base != null) && (servertime != base.servertime);
+				base = { servertime: servertime, at: Date.now(), rate: moving ? TICKS_PER_MS : 0 };
+				if (!moving)
+					shown = null;	// Show the server time as is
+			}
+			else {
+				base = shown = null;
+			}
+			showTime();
+		};
+
 		$(dynmap).bind('worldupdated', function(event, update) {
 			setTime(update.servertime);
 		});
