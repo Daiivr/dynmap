@@ -41,6 +41,9 @@ test {
 }
 
 processResources {
+    // The expanded values are not tracked otherwise, so a new build number would leave the files stale
+    inputs.property('buildnumber', project.parent.ext.globals.buildNumber)
+    inputs.property('version', project.version)
     // replace stuff in mcmod.info, nothing else
     filesMatching([
         'core.yml',

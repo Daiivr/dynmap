@@ -1,4 +1,4 @@
-// Mirrors the repository root build.gradle - keep the two in sync.
+// Mirrors the repository root build.gradle (apart from the dev build number) - keep the two in sync.
 // Workaround for Shadow not supporting Java 19 classes.
 // Remove this once Shadow updates.
 // See: https://github.com/johnrengelman/shadow/pull/770
@@ -40,7 +40,10 @@ allprojects  {
 }
 
 class Globals {
-  String buildNumber =  System.getenv().BUILD_NUMBER ?: "Dev"
+  // Unlike the root build, dev builds are stamped with the build time: the web UI loads its files as
+  // ?_=<version>-<build>, so a constant "Dev" lets browsers keep serving a previous build's scripts
+  String buildNumber =  System.getenv().BUILD_NUMBER ?:
+      "Dev-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd.HHmm"))
 }
 ext {
   globals = new Globals()

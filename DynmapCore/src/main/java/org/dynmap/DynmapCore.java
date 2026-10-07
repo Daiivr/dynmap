@@ -988,6 +988,9 @@ public class DynmapCore implements DynmapCommonAPI {
                 this.setWelcomeFiles(new String[] { "index.html" });
                 this.setRedirectWelcome(false);
                 this.setDirectoriesListed(true);
+                // Have browsers revalidate the web UI files (cheap 304s) so an updated jar's files are used
+                // straight away: their URLs (?_=version-build) don't change between dev builds
+                this.setCacheControl("no-cache");
                 this.setBaseResource(createFileResource(getFile(getWebPath()).getAbsolutePath()));
             }};
             try {
