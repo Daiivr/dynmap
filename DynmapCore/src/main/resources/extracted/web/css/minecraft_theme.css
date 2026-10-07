@@ -14,8 +14,19 @@
 	font-display: swap;
 }
 
+/* Digits 0-9 only, as 5x7 pixel glyphs sized to match Pixelify Sans (whose 5 reads like a mirrored 2)
+ * and all the same width so numbers don't shift. Built by tools/build_digits_font.py. */
+@font-face {
+	font-family: 'Dynmap Pixel Digits';
+	src: url(fonts/DynmapPixelDigits.woff2) format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+	unicode-range: U+0030-0039;
+}
+
 .dynmap {
-	--mc-font: 'Pixelify Sans', 'Courier New', monospace;
+	--mc-font: 'Dynmap Pixel Digits', 'Pixelify Sans', 'Courier New', monospace;
 
 	/* GUI panel */
 	--mc-panel: #c6c6c6;

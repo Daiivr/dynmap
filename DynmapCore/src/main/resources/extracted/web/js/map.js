@@ -377,7 +377,8 @@ DynMap.prototype = {
 		var tobeloaded = {};
 		$.each(configset, function(type, configlist) {
 		    tobeloaded[type] = true;
-			loadjs('js/' + type + '.js', function() {
+			// Same ?_=version-build token as index.html, so a new jar's components are not served from cache
+			loadjs('js/' + type + '.js?_=' + encodeURIComponent(dynmapversion), function() {
 				var componentconstructor = componentconstructors[type];
 				if (componentconstructor) {
 					$.each(configlist, function(idx, configuration) {
