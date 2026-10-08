@@ -27,7 +27,9 @@ public final class Config {
 
         builder.push("waystones");
         SHOW_GENERATED = builder
-                .comment("Also show waystones generated in villages, the wilderness and dungeons (by default only the ones players placed)")
+                .comment("Also show waystones players did not place: generated in villages, the wilderness and dungeons, or by",
+                        "other mods' structures (by default only the ones players placed, which excludes any placed before",
+                        "Waystones recorded who placed them)")
                 .define("showGenerated", false);
         SHOW_SHARESTONES = builder
                 .comment("Show sharestones")

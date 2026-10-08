@@ -2,6 +2,7 @@ package io.github.daiivr.dynmapwaystones;
 
 import com.mojang.authlib.GameProfile;
 import net.blay09.mods.waystones.api.IWaystone;
+import net.blay09.mods.waystones.api.WaystoneOrigin;
 import net.blay09.mods.waystones.api.WaystonesAPI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -185,7 +186,10 @@ final class WaystoneMarkers extends DynmapCommonAPIListener {
         if (!waystone.isValid()) {
             return false;
         }
-        if (waystone.wasGenerated() && !Config.SHOW_GENERATED.get()) {
+        // Only placing one sets PLAYER: generated ones are VILLAGE / WILDERNESS / DUNGEON, but those from
+        // other mods' structures (e.g. Repurposed Structures villages) keep the block's default, UNKNOWN.
+        // Ownership is no guide either: the first player to activate an unowned waystone becomes its owner.
+        if ((waystone.getOrigin() != WaystoneOrigin.PLAYER) && !Config.SHOW_GENERATED.get()) {
             return false;
         }
         if (Config.ONLY_GLOBAL.get() && !waystone.isGlobal()) {

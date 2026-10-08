@@ -17,7 +17,7 @@ eclipse {
 }
 
 // Separate add-on mod: shows Waystones (https://modrinth.com/mod/waystones) on the map through the Dynmap marker API
-version = '1.0.0'
+version = '1.0.1'
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '17'
 
 minecraft {
