@@ -32,16 +32,14 @@ final class WaystoneMarkers extends DynmapCommonAPIListener {
     private static final String MARKER_SET_ID = "waystones";
 
     private enum Kind {
-        WAYSTONE("waystone", "Waystone"),
-        SHARESTONE("sharestone", "Sharestone"),
-        WARP_PLATE("warp_plate", "Warp Plate"),
-        PORTSTONE("warp_plate", "Portstone");
+        WAYSTONE("Waystone"),
+        SHARESTONE("Sharestone"),
+        WARP_PLATE("Warp Plate"),
+        PORTSTONE("Portstone");
 
-        final String icon;
         final String title;
 
-        Kind(String icon, String title) {
-            this.icon = icon;
+        Kind(String title) {
             this.title = title;
         }
 
@@ -154,7 +152,7 @@ final class WaystoneMarkers extends DynmapCommonAPIListener {
             double y = pos.getY();
             double z = pos.getZ() + 0.5;
             String label = waystone.hasName() ? waystone.getName() : kind.title;
-            MarkerIcon icon = icon(api, kind);
+            MarkerIcon icon = icon(api, iconName(kind, waystone.getWaystoneType()), kind.title);
             String description = description(server, waystone, kind, label, pos);
 
             String state = world + '|' + x + '|' + y + '|' + z + '|' + label + '|' + icon.getMarkerIconID() + '|' + description;
@@ -206,29 +204,49 @@ final class WaystoneMarkers extends DynmapCommonAPIListener {
         }
     }
 
-    private MarkerIcon icon(MarkerAPI api, Kind kind) {
-        MarkerIcon icon = icons.get(kind.icon);
+    /**
+     * Icon in assets/dynmapwaystones/icons (built by tools/build_waystone_icons.js): sharestones in their dye colour.
+     */
+    private static String iconName(Kind kind, ResourceLocation type) {
+        switch (kind) {
+            case SHARESTONE:
+                String path = type.getPath();
+                return path.endsWith("_sharestone") ? "sharestone_" + path.substring(0, path.length() - "_sharestone".length()) : "sharestone";
+            case WARP_PLATE:
+                return "warp_plate";
+            case PORTSTONE:
+                return "portstone";
+            default:
+                return "waystone";
+        }
+    }
+
+    private MarkerIcon icon(MarkerAPI api, String name, String title) {
+        MarkerIcon icon = icons.get(name);
         if (icon != null) {
             return icon;
         }
-        String id = "waystones_" + kind.icon;
-        try (InputStream png = WaystoneMarkers.class.getResourceAsStream("/assets/dynmapwaystones/icons/" + kind.icon + ".png")) {
+        String id = "waystones_" + name;
+        try (InputStream png = WaystoneMarkers.class.getResourceAsStream("/assets/dynmapwaystones/icons/" + name + ".png")) {
             if (png != null) {
                 icon = api.getMarkerIcon(id);
                 if (icon == null) {
-                    icon = api.createMarkerIcon(id, kind.title, png);
+                    icon = api.createMarkerIcon(id, title, png);
                 }
                 else {
                     icon.setMarkerIconImage(png);   // Keep it in step with this jar's image
                 }
             }
+            else if (name.startsWith("sharestone_")) {    // A dye colour without its own icon
+                icon = icon(api, "sharestone", title);
+            }
         } catch (IOException e) {
-            DynmapWaystones.LOG.warn("Could not load the {} map icon", kind.icon, e);
+            DynmapWaystones.LOG.warn("Could not load the {} map icon", name, e);
         }
         if (icon == null) {
             icon = api.getMarkerIcon(MarkerIcon.DEFAULT);
         }
-        icons.put(kind.icon, icon);
+        icons.put(name, icon);
         return icon;
     }
 
