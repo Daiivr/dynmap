@@ -1,9 +1,9 @@
-// Slim build root for the Forge 1.20.1 jar only.
+// Slim build root for the Forge 1.20.1 jars only.
 // The main settings.gradle configures every Fabric/Forge module (each of which downloads and
 // sets up its own Minecraft version), so building one target from there is very slow.
 // Usage (from the repository root, with JAVA_HOME pointing at a JDK 17):
 //     ./gradlew -p build-forge-1.20.1 build
-// Output: target/Dynmap-<version>-forge-1.20.1.jar
+// Output: target/Dynmap-<version>-forge-1.20.1.jar and the Waystones add-on, target/DynmapWaystones-<version>-forge-1.20.1.jar
 pluginManagement {
   repositories {
     gradlePluginPortal()
@@ -15,7 +15,9 @@ rootProject.name = 'dynmap-common'
 include ':DynmapCoreAPI'
 include ':DynmapCore'
 include ':forge-1.20.1'
+include ':dynmap-waystones'
 
 project(':DynmapCoreAPI').projectDir = "$rootDir/../DynmapCoreAPI" as File
 project(':DynmapCore').projectDir = "$rootDir/../DynmapCore" as File
 project(':forge-1.20.1').projectDir = "$rootDir/../forge-1.20.1" as File
+project(':dynmap-waystones').projectDir = "$rootDir/../dynmap-waystones" as File

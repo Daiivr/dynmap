@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+
+eclipse {
+    project {
+        name = "Dynmap(Waystones-Forge-1.20.1)"
+    }
+}
+
+// Separate add-on mod: shows Waystones (https://modrinth.com/mod/waystones) on the map through the Dynmap marker API
+version = '1.0.0'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '17'
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+}
+
+repositories {
+    maven { url = 'https://maven.twelveiterations.com/repository/maven-public/' }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.10'
+
+    // Both are provided at runtime by the Dynmap and Waystones mods themselves
+    compileOnly project(':DynmapCoreAPI')
+    compileOnly(fg.deobf('net.blay09.mods:waystones-forge:14.1.21+1.20.1')) {
+        transitive = false
+    }
+}
+
+processResources {
+    inputs.property('version', project.version)
+    filesMatching('META-INF/mods.toml') {
+        expand(version: project.version)
+    }
+}
+
+jar {
+    archiveBaseName = 'DynmapWaystones'
+    archiveClassifier = 'forge-1.20.1'
+    destinationDirectory = file '../target'
+}
